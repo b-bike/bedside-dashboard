@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Bedside Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="day-mode">
+  <div id="night-dimmer" class="night-dimmer"></div>
+
+
+  <main class="dashboard">
+    <!-- TOP SECTION: Oversized Clock, Date, Alarm, Voice & Settings -->
+    <header class="top-bar">
+      <div class="clock-block">
+        <div class="time-row">
+          <span id="clock-time">12:00</span>
+          <span id="clock-ampm">AM</span>
+        </div>
+        <div id="clock-date" class="date-row">Sunday, November 22</div>
+      </div>
+
+
+      <div class="right-header">
+        <div class="status-controls">
+          <button id="alarm-btn" class="pill-btn" title="Configure Alarm">
+            <span class="pill-label">NEXT ALARM</span>
+            <span id="alarm-display" class="pill-value">Off</span>
+          </button>
+
+
+          <button id="night-toggle-btn" class="pill-btn" title="Toggle Night Mode">
+            <span class="pill-label">DISPLAY</span>
+            <span id="mode-display" class="pill-value">Day Mode</span>
+          </button>
+        </div>
+
+
+        <div class="icon-rail">
+          <button id="voice-btn" class="icon-btn" title="Voice Command">
+            <span id="voice-icon">🎙️</span>
+            <span id="voice-status" class="icon-label">Voice</span>
+          </button>
+          <button id="settings-btn" class="icon-btn" title="Configure Services">
+            <span>⚙️</span>
+            <span class="icon-label">Setup</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+
+    <!-- LOWER SECTION: 4 Quadrants -->
+    <section class="quadrant-grid">
+      <!-- Q1: Weather (Bountiful, UT 84010) -->
+      <article class="card weather-card">
+        <div class="card-header">
+          <span>BOUNTIFUL, UT</span>
+          <span id="weather-updated" class="subtle">--</span>
+        </div>
+        <div class="weather-main">
+          <div id="weather-temp" class="big-stat">--°</div>
+          <div class="weather-meta">
+            <div id="weather-desc" class="weather-desc">Loading weather...</div>
+            <div id="weather-hi-lo" class="weather-sub">H: --° · L: --°</div>
+          </div>
+        </div>
+        <div id="weather-forecast" class="forecast-strip"></div>
+      </article>
+
+
+      <!-- Q2: Audiobookshelf -->
+      <article class="card media-card" id="abs-card">
+        <div class="card-header">
+          <span>AUDIOBOOKSHELF</span>
+          <span id="abs-status" class="status-dot offline">Not Setup</span>
+        </div>
+        <div class="media-body">
+          <div class="media-title" id="abs-title">Tap ⚙️ Setup to link</div>
+          <div class="media-subtitle" id="abs-author">Local server URL &amp; API token</div>
+          <div class="progress-track">
+            <div class="progress-fill" id="abs-progress" style="width: 0%"></div>
+          </div>
+          <div class="time-meta" id="abs-time-meta">-- / --</div>
+        </div>
+        <div class="media-controls">
+          <button class="ctrl-btn" data-service="abs" data-action="back">-30s</button>
+          <button class="ctrl-btn primary" id="abs-play-btn" data-service="abs" data-action="play">Play</button>
+          <button class="ctrl-btn" data-service="abs" data-action="forward">+30s</button>
+        </div>
+      </article>
+
+
+      <!-- Q3: Spotify -->
+      <article class="card media-card" id="spotify-card">
+        <div class="card-header">
+          <span>SPOTIFY</span>
+          <span id="spotify-status" class="status-dot offline">Not Setup</span>
+        </div>
+        <div class="media-body">
+          <div class="media-title" id="spotify-title">Tap ⚙️ Setup to link</div>
+          <div class="media-subtitle" id="spotify-artist">Connect Spotify account</div>
+          <div class="progress-track">
+            <div class="progress-fill" id="spotify-progress" style="width: 0%"></div>
+          </div>
+          <div class="time-meta" id="spotify-device">No active device</div>
+        </div>
+        <div class="media-controls">
+          <button class="ctrl-btn" data-service="spotify" data-action="prev">Prev</button>
+          <button class="ctrl-btn primary" id="spotify-play-btn" data-service="spotify" data-action="play">Play</button>
+          <button class="ctrl-btn" data-service="spotify" data-action="next">Next</button>
+        </div>
+      </article>
+
+
+      <!-- Q4: Daily Quote & Sunrise/Sunset -->
+      <article class="card quote-card" id="quote-card" title="Tap for another quote">
+        <div class="card-header">
+          <span>DAILY FOCUS</span>
+          <span class="sun-times">
+            ☀ <span id="sunrise-time">--:--</span> &nbsp; ☾ <span id="sunset-time">--:--</span>
+          </span>
+        </div>
+        <div class="quote-body">
+          <blockquote id="quote-text">"Discipline is choosing between what you want now and what you want most."</blockquote>
+          <cite id="quote-author">— Abraham Lincoln</cite>
+        </div>
+      </article>
+    </section>
+  </main>
+
+
+  <!-- Hidden Audio Player for Audiobookshelf -->
+  <audio id="abs-audio-player" preload="none"></audio>
+
+
+  <!-- Voice Toast Feedback -->
+  <div id="voice-toast" class="voice-toast hidden">Listening...</div>
+
+
+  <!-- Alarm Modal -->
+  <div id="alarm-modal" class="modal hidden">
+    <div class="modal-box">
+      <h2>Set Bedside Alarm</h2>
+      <input type="time" id="alarm-time-input" value="06:30" />
+      <div class="modal-actions">
+        <button id="alarm-off-btn" class="ctrl-btn">Turn Off</button>
+        <button id="alarm-cancel-btn" class="ctrl-btn">Cancel</button>
+        <button id="alarm-save-btn" class="ctrl-btn primary">Save Alarm</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Active Alarm Ringing Overlay -->
+  <div id="alarm-ringing" class="modal hidden">
+    <div class="modal-box ringing-box">
+      <div class="ringing-label">ALARM</div>
+      <div id="ringing-time" class="ringing-time">6:30 AM</div>
+      <div class="modal-actions">
+        <button id="snooze-btn" class="ctrl-btn">Snooze 9m</button>
+        <button id="dismiss-btn" class="ctrl-btn primary">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Integrations & Schedule Settings Modal -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-box settings-box">
+      <h2>Dashboard Setup</h2>
+
+
+      <div class="form-group">
+        <label>Audiobookshelf Server URL</label>
+        <input type="url" id="cfg-abs-url" placeholder="http://192.168.1.50:13378" />
+      </div>
+
+
+      <div class="form-group">
+        <label>Audiobookshelf API Token</label>
+        <input type="password" id="cfg-abs-token" placeholder="Paste API token from ABS Users page" />
+      </div>
+
+
+      <div class="form-group">
+        <label>Spotify Client ID</label>
+        <input type="text" id="cfg-spotify-id" placeholder="32-character Client ID from Spotify Dev Dashboard" />
+        <div class="form-hint">Redirect URI to whitelist in Spotify: <code id="redirect-uri-hint"></code></div>
+      </div>
+
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Auto Night Start</label>
+          <input type="time" id="cfg-night-start" value="22:00" />
+        </div>
+        <div class="form-group">
+          <label>Auto Night End</label>
+          <input type="time" id="cfg-night-end" value="06:30" />
+        </div>
+      </div>
+
+
+      <div class="modal-actions">
+        <button id="settings-cancel-btn" class="ctrl-btn">Close</button>
+        <button id="spotify-auth-btn" class="ctrl-btn">Connect Spotify</button>
+        <button id="settings-save-btn" class="ctrl-btn primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="quotes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
